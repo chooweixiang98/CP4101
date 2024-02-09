@@ -1,0 +1,11 @@
+pytube
+pydub
+librosa
+soundfile
+transformers
+torch
+bert-extractive-summarizer
+git+https://github.com/openai/whisper.git
+jiwer
+certifi
+requests
