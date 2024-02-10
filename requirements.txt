@@ -5,7 +5,13 @@ soundfile
 transformers
 torch
 bert-extractive-summarizer
+langchain
+openai
+python-dotenv
 git+https://github.com/openai/whisper.git
 jiwer
 certifi
 requests
+
+nltk
+sentencepiece
