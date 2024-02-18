@@ -15,3 +15,7 @@ requests
 
 nltk
 sentencepiece
+langchain-openai
+langchain-community
+unstructured
+chromadb

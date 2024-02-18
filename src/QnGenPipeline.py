@@ -63,6 +63,9 @@ class QGPipeline:
         else:
             qg_examples = self._prepare_inputs_for_qg_from_answers_hl(sents, answers)
         
+        # Filter out questions with no corresponding answers
+        qg_examples = [example for example in qg_examples if example['answer']]
+
         qg_inputs = [example['source_text'] for example in qg_examples]
         questions = self._generate_questions(qg_inputs)
         output = [{'answer': example['answer'], 'question': que} for example, que in zip(qg_examples, questions)]
@@ -91,12 +94,18 @@ class QGPipeline:
             max_length=32,
         )
         
-        dec = [self.ans_tokenizer.decode(ids, skip_special_tokens=False) for ids in outs]
+        dec = [self.ans_tokenizer.decode(ids, skip_special_tokens=True) for ids in outs]
+        # Filter out empty strings
+        dec = [item for item in dec if item.strip()]
+        # Split each decoded text by the '<sep>' token
         answers = [item.split('<sep>') for item in dec]
-        answers = [i[:-1] for i in answers]
+        # Remove empty lists
+        answers = [i for i in answers if i]
+        # Trim whitespace from each answer
+        answers = [[ans.strip() for ans in ans_list] for ans_list in answers]
         
         return sents, answers
-    
+
     def _tokenize(self,
         inputs,
         padding=True,
@@ -142,7 +151,11 @@ class QGPipeline:
                 sents_copy = sents[:]
                 
                 answer_text = answer_text.strip()
-                
+
+                # Check if the answer_text exists in the sent
+                if answer_text not in sent:
+                    continue
+                    
                 ans_start_idx = sent.index(answer_text)
                 
                 sent = f"{sent[:ans_start_idx]} <hl> {answer_text} <hl> {sent[ans_start_idx + len(answer_text): ]}"
@@ -156,6 +169,7 @@ class QGPipeline:
                 inputs.append({"answer": answer_text, "source_text": source_text})
         
         return inputs
+
     
     def _prepare_inputs_for_qg_from_answers_prepend(self, context, answers):
         flat_answers = list(itertools.chain(*answers))
