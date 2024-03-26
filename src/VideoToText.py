@@ -3,6 +3,7 @@ import os
 from pytube import YouTube
 import whisper
 from transformers import pipeline
+from nltk.tokenize import sent_tokenize
 
 ASSET_PATH = './assets'
 
@@ -47,7 +48,8 @@ def summarize_text(transcript_path, initials):
         text = file.read()
 
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-    summary_text = summarizer(text, min_length=120, do_sample=False)
+    text_arr = text.split(" ")
+    summary_text = summarizer(text, min_length=len(text_arr) // 3, max_length=2048, do_sample=True)
 
     with open(summary_path, 'w') as file:
         file.write(summary_text[0]['summary_text'])
